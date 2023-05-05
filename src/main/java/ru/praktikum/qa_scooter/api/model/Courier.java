@@ -1,3 +1,5 @@
+package ru.praktikum.qa_scooter.api.model;
+
 public class Courier {
     private String login;
     private String password;

@@ -1,12 +1,16 @@
+package ru.praktikum.qa_scooter.api;
+
 import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.response.ValidatableResponse;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import ru.praktikum.qa_scooter.api.client.CourierClient;
+import ru.praktikum.qa_scooter.api.model.CourierCredentials;
+import ru.praktikum.qa_scooter.api.util.CourierGenerator;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 public class CreateСourierTests {
 
@@ -29,8 +33,11 @@ public class CreateСourierTests {
     public void checkNotAllRequiredFieldsFilled() {
         //создаем нового курьера без пароля
         ValidatableResponse responseCreate = courierClient.createCourier(CourierGenerator.getDefaultWithoutPassword());
+        int statusCode = responseCreate.extract().statusCode();
         //проверяем статус код и текст сообщения
-        responseCreate.assertThat().statusCode(400).and().body("message", equalTo("Недостаточно данных для создания учетной записи"));
+        assertEquals("Некорректный статус код", 400, statusCode);
+        String message = responseCreate.extract().path("message");
+        assertEquals("Недостаточно данных для создания учетной записи", message);
     }
 
     @Test
@@ -39,12 +46,17 @@ public class CreateСourierTests {
     public void createNewCourierAndCheckResponse() {
         //создаем нового курьера
         ValidatableResponse responseCreate = courierClient.createCourier(CourierGenerator.getDefault());
-        //проверяем успешность создания
-        responseCreate.assertThat().statusCode(201).and().body("ok", equalTo(true));
+        int statusCode = responseCreate.extract().statusCode();
+        //проверяем статус код создания курьера
+        assertEquals("Некорректный статус код", 201, statusCode);
+        boolean isCreated = responseCreate.extract().path("ok");
+        //провереяем ответ о успешности создания
+        assertTrue("Курьер не создан", isCreated);
         //логинимся под новым курьером
         ValidatableResponse responseLogin = courierClient.loginCourier(CourierCredentials.from(CourierGenerator.getDefault()));
+        int loginStatusCode = responseLogin.extract().statusCode();
         //проверяем что курьер залогинился
-        responseLogin.assertThat().statusCode(200);
+        assertEquals("Некорректный статус код", 200, loginStatusCode);
         //записываем id созданного курьера
         courierId = responseLogin.extract().path("id");
         //проверяем, что id что не равен нулю
@@ -57,19 +69,27 @@ public class CreateСourierTests {
     public void checkNotCreateTwoIdenticalCouriers() {
         //создаем нового курьера
         ValidatableResponse responseCreate = courierClient.createCourier(CourierGenerator.getDefault());
-        //проверяем успешность создания
-        responseCreate.assertThat().statusCode(201).and().body("ok", equalTo(true));
+        int statusCode = responseCreate.extract().statusCode();
+        //проверяем статус код создания курьера
+        assertEquals("Некорректный статус код", 201, statusCode);
+        boolean isCreated = responseCreate.extract().path("ok");
+        //провереяем ответ о успешности создания
+        assertTrue("Курьер не создан", isCreated);
         //логинимся под новым курьером
         ValidatableResponse responseLogin = courierClient.loginCourier(CourierCredentials.from(CourierGenerator.getDefault()));
+        int loginStatusCode = responseLogin.extract().statusCode();
         //проверяем что курьер залогинился
-        responseLogin.assertThat().statusCode(200);
+        assertEquals("Некорректный статус код", 200, loginStatusCode);
         //записываем id созданного курьера
         courierId = responseLogin.extract().path("id");
         //проверяем, что id что не равен нулю
         assertNotNull("Id is null", courierId);
         //пытаемся создать курьера с тем же самым логином
         ValidatableResponse responseNotCreate = courierClient.createCourier(CourierGenerator.getDefault());
-        //проверяем, что возвращается ошибка
-        responseNotCreate.assertThat().statusCode(409).and().body("message", equalTo("Этот логин уже используется. Попробуйте другой."));
+        int doubleStatusCode = responseNotCreate.extract().statusCode();
+        //проверяем статус код и текст сообщения
+        assertEquals("Некорректный статус код", 409, doubleStatusCode);
+        String message = responseNotCreate.extract().path("message");
+        assertEquals("Этот логин уже используется. Попробуйте другой.", message);
     }
 }

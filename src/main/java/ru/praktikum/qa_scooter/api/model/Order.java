@@ -1,3 +1,5 @@
+package ru.praktikum.qa_scooter.api.model;
+
 public class Order {
 
     private String firstName;

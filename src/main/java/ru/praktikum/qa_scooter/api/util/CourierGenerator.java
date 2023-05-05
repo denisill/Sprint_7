@@ -1,3 +1,7 @@
+package ru.praktikum.qa_scooter.api.util;
+
+import ru.praktikum.qa_scooter.api.model.Courier;
+
 public class CourierGenerator {
     public static Courier getDefault() {
         return new Courier("004denisill", "0019", "den07");

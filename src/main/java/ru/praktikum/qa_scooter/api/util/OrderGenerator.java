@@ -1,3 +1,7 @@
+package ru.praktikum.qa_scooter.api.util;
+
+import ru.praktikum.qa_scooter.api.model.Order;
+
 public class OrderGenerator {
 
     public static Order getDefault(String[] color) {
